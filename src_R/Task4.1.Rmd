@@ -1,0 +1,56 @@
+---
+title: "Task4.1"
+author: "Nico Hagmeier"
+date: "2024-05-08"
+output:
+  pdf_document: default
+  html_document: default
+---
+Pakete
+```{r}
+require("ggplot2")
+require("caret")
+```
+```{r}
+heart <- read.csv("C:/Users/Scele/OneDrive/Desktop/Modul12/heartdata.csv", row.names = 1)
+```
+Verteilung 
+```{r}
+cor(heart$biking, heart$smoking)
+plot(heart$heartdisease ~ heart$smoking)
+plot(heart$heartdisease ~ heart$biking)
+hist(heart$biking)
+hist(heart$smoking)
+```
+Lineare Regression
+```{r}
+hd_lm <- lm(heartdisease ~ biking + smoking, data = heart)
+summary(hd_lm)
+```
+r² 0.98; p-value < 0,05 significant!
+
+plotten um das model zu prüfen
+```{r}
+par(mfrow=c(2,2))
+plot(hd_lm)
+```
+
+plotten
+```{r}
+ggplot(heart, aes(x= heartdisease, y = biking))+
+  geom_point()+
+  stat_smooth(method = "lm", col = "green")
+
+ggplot(heart, aes(x= heartdisease, y = smoking))+
+  geom_point()+
+  stat_smooth(method = "lm", col = "red")
+
+```
+
+Modelltraining
+```{r}
+fitControl <- trainControl (## 18-fold CV
+                          method = "cv", number = 10)
+
+lmfit <- train(heartdisease ~., data=heart, method="lm", trControl = fitControl, preProc=c("center","scale"))
+```

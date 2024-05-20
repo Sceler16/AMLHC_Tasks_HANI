@@ -1,0 +1,67 @@
+---
+title: "Task 3.1"
+author: "Nico Hagmeier"
+date: "2024-04-26"
+output:
+        pdf_document: default
+        html_document: default
+---
+packages
+```{r}
+rm(list=ls())
+require("clusterCrit")
+require("gplots")
+require("fpc")
+```
+Daten
+```{r}
+dsta <- read.csv("C:/Users/Scele/OneDrive/Desktop/Modul12/food.csv", row.names = 1)
+fds <- scale(dsta)
+```
+Clusterung
+```{r}
+best_k <- 0
+best_silu <- -Inf
+for (k in 2:5) {
+  kmc <- kmeans(fds, centers =k)
+  ci <- intCriteria(fds,kmc$cluster, "Silhouette")
+  silhouette_value <- ci$silhouette
+   cat("Silhouette coefficient for k =", k, ":", silhouette_value, "\n")
+  if (silhouette_value > best_silu) {
+    best_k <- k
+    best_silu <- silhouette_value
+    }
+}
+  
+cat("\nFinal selected number of clusters:", best_k, "\n")
+```
+PCA (principal component analysis)
+```{r}
+  pca <- princomp(fds)
+  data_red <- pca$scores[,1:2]
+  data_red <- data_red * -1
+  plot(data_red[,"Comp.1"], data_red[,"Comp.2"], col=kmc$cluster)
+  text(data_red[,"Comp.1"], data_red[,"Comp.2"] - 0.1, labels=row.names(fds), cex=0.5)
+
+
+summary(pca)
+
+```
+Hirarchical clustering
+```{r}
+hcf <- hclust(dist(fds))
+plot(hcf)
+```
+
+
+```{r}
+heatmap.2(fds, scale ="none")
+```
+DBC density based clustering
+```{r}
+dbc <- dbscan(fds, eps = 3)
+clus <- dbc$cluster
+clus
+  plot(data_red[,"Comp.1"], data_red[,"Comp.2"], col=clus)
+  text(data_red[,"Comp.1"], data_red[,"Comp.2"], labels=row.names(fds), cex=0.5)
+```

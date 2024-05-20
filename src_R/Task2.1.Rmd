@@ -1,0 +1,45 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+title: "R Notebook"
+output:
+  html_notebook: default
+pdf_document: default
+---
+
+  
+  ## Load data and get an overview
+```{r}
+require(ggplot2)
+```
+## Load dataset food.csv 
+
+```{r}
+setwd("C:/Users/Scele/OneDrive/Desktop/Modul12")
+dsta <- read.csv("C:/Users/Scele/OneDrive/Desktop/Modul12/food.csv", row.names = 1)
+dim(dsta)
+sum(is.na(dsta))
+
+```
+
+## PCA (principal component analysis)
+```{r}
+scaled_dsta <- scale(dsta[,-1])
+pca <- princomp(scaled_dsta)
+
+summary(pca)
+```
+##PCA-Graph
+```{r}
+library(ggplot2)
+
+scores <- as.data.frame(pca$scores)
+names(scores) <- paste0("PC", 1:ncol(scores))
+
+ggplot(scores, aes(x = PC1, y = PC2)) +
+  geom_point() +
+  labs(x = 'PC1', y = 'PC2', title = 'PCA Score Plot') +
+  theme_minimal()
+```

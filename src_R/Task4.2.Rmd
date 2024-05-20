@@ -1,0 +1,33 @@
+---
+title: "Task4.2"
+author: "Nico Hagmeier"
+date: "2024-05-08"
+output:
+  pdf_document: default
+  html_document: default
+---
+Pakete
+```{r}
+require(foreign)
+require(caret)
+```
+
+Daten
+```{r}
+diab <- read.arff("C:/Users/Scele/OneDrive/Desktop/Modul12/diabetes.arff")
+head(diab)
+```
+
+GLM (generalized linear model)
+```{r}
+diab_glm <- glm(class ~ . , data=diab, family = "binomial")
+summary(diab_glm)
+```
+Modell Training
+```{r}
+set.seed(123)
+fitControl <- trainControl(method="cv",number =10)
+glmFit <- train(class ~., data=diab, method = "glm", family = binomial, trControl = fitControl, 
+                     preProc = c("center", "scale"))
+```
+

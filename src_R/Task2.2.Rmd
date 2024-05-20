@@ -1,0 +1,88 @@
+---
+title: "Task2.2"
+output: pdf_document: default
+        html_document: default
+        word_document: default
+date: "2024-04-10"
+---
+
+Bibs
+```{r}
+library(tidyverse)
+library(Hmisc)
+library(ggplot2)
+library(dplyr)
+library(FSelector)
+library(FSelectorRcpp)
+```
+Datei
+```{r}
+setwd("C:/Users/Scele/OneDrive/Desktop/Modul12")
+diab <- read.csv("C:/Users/Scele/OneDrive/Desktop/Modul12/diabetes.csv")
+head(diab)
+dim(diab)
+sum(is.na(diab))
+diab_num <- select(diab, where(is.numeric))
+dim(diab_num)
+```
+Outlier replacement anhand IQR
+```{r}
+
+
+
+outlierdetection <- function(x) {
+  Q1 <- quantile(x, 0.25, na.rm = TRUE)
+  Q3 <- quantile(x, 0.75, na.rm = TRUE)
+  IQR <- Q3 - Q1
+  lower_bound <- Q1 - 1.5 * IQR
+  upper_bound <- Q3 + 1.5 * IQR
+  x[x < lower_bound  | x > upper_bound] <- NA
+  return(x)
+}
+
+numeric_col <- sapply(diab, is.numeric)
+diab[numeric_col] <- lapply(diab[numeric_col], outlierdetection)
+```
+0 ausschließen
+```{r}
+zero_val <- c("plas", "pres", "skin", "insu", "mass")
+diab[zero_val] <- lapply(diab [zero_val], function(x) replace(x, x == 0, NA))
+head(diab)
+```
+NA-Werte entfernen
+```{r}
+diab_new <- diab %>% drop_na()
+```
+Daten beschreiben
+```{r}
+diab_dis <- describe(diab_new) 
+```
+
+```{r}
+
+feature_names <- names(diab_new)
+ig <- information_gain(class~ ., diab_new)
+ig_df <- data.frame(Feature = ig$attributes, Information_Gain = ig$importance)
+
+ig_sorted <- ig_df[order(-ig_df$Information_Gain), ]
+print(ig_sorted)
+```
+
+```{r}
+ggplot(diab_new, aes(x = !!sym(highest_ig_feature))) +
+  geom_boxplot() +
+  ggtitle(paste("Boxplot of", highest_ig_feature))
+
+ggplot(diab_new, aes(x = !!sym(highest_ig_feature))) +
+  geom_density() +
+  ggtitle(paste("Distribution plot of", highest_ig_feature))
+
+# Boxplot und Dichteplot für das Feature mit dem niedrigsten Information Gain
+ggplot(diab_new, aes(x = !!sym(smallest_ig_feature))) +
+  geom_boxplot() +
+  ggtitle(paste("Boxplot of", smallest_ig_feature))
+
+ggplot(diab_new, aes(x = !!sym(smallest_ig_feature))) +
+  geom_density() +
+  ggtitle(paste("Distribution plot of", smallest_ig_feature))
+```
