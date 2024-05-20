@@ -1,0 +1,50 @@
+---
+title: "Task 4.4"
+output: html_notebook
+---
+rm(list=ls()) 
+```{r}
+require(caret)
+data(cox2)
+dim(cox2Descr)
+```
+
+
+```{r}
+x<- cox2Descr
+y <- cox2Class
+```
+
+#create a seperate test data to get a realistic estimate of our performance after hyperparameter tuning
+```{r}
+inTrain <- createDataPartition(y, p=0.75, list=FALSE) 
+x_train <- x[inTrain,]
+y_train <-y[inTrain]
+x_test <- x[inTrain,]
+y_test <- y[inTrain]
+
+```
+
+```{r}
+model_rf <- train(x_train, y_train, method="rf", preProcess=c())
+```
+
+```{r}
+featVar <- apply(x_train, 2, var)
+length(featVar<0.001)
+
+```
+
+#Now we train and evaluation our model using random forest
+```{r}
+trControl <- trainControl(method="cv", number=10)
+model_rf <- train(x_train, y_train, method="rf", preProcess=c("center", "scale"),
+trainControl=trControl) #method="nnet"
+```
+
+```{r}
+best_rf <- model_rf$finalModel
+y_predicted <- predict(best_rf, x_test)
+confusionMatrix(y_predicted, y_test)
+```
+
