@@ -1,0 +1,89 @@
+---
+title: "AMLHC-final-exam"
+author: "Nico Hagmeier"
+date: "2024-06-24"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+
+```{r}
+diab <- read.csv("C:/Users/Scele/OneDrive/Desktop/AMLHC-final-exam/diabetes.csv", header = TRUE) 
+str(diab)
+```
+
+
+```{r}
+# Laden der notwendigen Bibliotheken
+library(randomForest)
+library(caret)
+library(e1071)
+library(pROC)
+library(ggplot2)
+```
+```{r}
+diab$Outcome <- as.factor(diab$Outcome)
+
+```
+
+```{r}
+set.seed(123)  # Für die Reproduzierbarkeit 
+trainIndex <- createDataPartition(diab$Outcome, p = 0.7, list = FALSE)
+trainData <- diab[trainIndex, ]
+testData <- diab[-trainIndex, ]
+
+X_train <- trainData[, -ncol(trainData)]
+y_train <- trainData$Outcome
+X_test <- testData[, -ncol(testData)]
+y_test <- testData$Outcome
+
+```
+
+
+```{r}
+# Definieren des Modells und der Parameter
+model <- trainControl(method = "repeatedcv", number = 10, repeats = 3, search = "grid")
+tunegrid <- expand.grid(.mtry = c(sqrt(ncol(X_train)), log2(ncol(X_train))))
+```
+```{r}
+# Durchführung der Grid-Suche
+set.seed(1)
+rf_gridsearch <- train(X_train, y_train, method = "rf", metric = "Accuracy", tuneGrid = tunegrid, trControl = model, ntree = 1800)
+
+# Beste Parameter finden
+best_model <- rf_gridsearch$finalModel
+print(rf_gridsearch)
+
+```
+```{r}
+# Vorhersagen mit dem besten Modell
+rf_pred <- predict(rf_gridsearch, X_test)
+```
+```{r}
+# Klassifikationsbericht 
+conf_matrix <- confusionMatrix(rf_pred, y_test)
+print(conf_matrix)
+
+precision <- posPredValue(rf_pred, y_test, positive = "1")
+recall <- sensitivity(rf_pred, y_test, positive = "1")
+f1 <- 2 * (precision * recall) / (precision + recall)
+
+cat("\nPrecision:\n", precision)
+cat("\nRecall:\n", recall)
+cat("\nF1-Score:\n", f1)
+
+```
+
+```{r}
+# Konfusionsmatrix als Heatmap darstellen
+conf_matrix_table <- as.table(conf_matrix$table)
+ggplot(data = as.data.frame(conf_matrix_table), aes(x = Reference, y = Prediction, fill = Freq)) +
+  geom_tile() +
+  scale_fill_gradient(low = "white", high = "red") +
+  theme_minimal() +
+  labs(title = "Confusion Matrix Heatmap", x = "Actual", y = "Predicted")
+```
+
+
+
