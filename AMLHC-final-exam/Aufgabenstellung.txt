@@ -1,0 +1,9 @@
+Select a dataset of interest in the area for healthcare for your supervised or unsupervised study. 
+Use open dataset repositories such as UCI Machine Learning Repository or Kaggle. 
+Define your research question.
+Create a directory in your Git repository (GitHub) termed "AMLHC-final-exam"
+Implement your knowledge discovery workflow including preprocessing, supervised- or unsupervised learning using code versioning (git).
+Create a final evaluation report where you interpret your findings and discuss your research question. 
+You can either create a separate report using Word/LaTeX or extend your notebook using Markdown/sweave. 
+Present your evaluation report (5 - max. 7 minutes)
+Regularly update your progress using git
